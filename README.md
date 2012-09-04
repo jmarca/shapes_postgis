@@ -9,3 +9,4 @@ in turn spit back GeoJSON data in response to the usual
 zoom/column/row type queries from map clients like Polymaps,
 OpenLayers, and so on.
 
+This library is not yet ready for anyone else to use.
