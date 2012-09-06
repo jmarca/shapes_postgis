@@ -157,9 +157,7 @@ describe ('shape_service', function(){
                 app = express()
                       .use(express.cookieParser('barley Waterloo Napoleon Mareschal Foch bravest'))
                       .use(express.session({ store: new RedisStore }))
-
-                app.get('/areas/:zoom/:column/:row.:format'
-                       ,shape_service({'db':'spatialvds'
+                var shape_handler = shape_service({'db':'spatialvds'
                                       ,'table':'public.carb_counties_aligned_03'
                                       ,'alias':'counties'
                                       ,'host':phost
@@ -187,7 +185,12 @@ describe ('shape_service', function(){
                                                       ,'join' :'on (counties.name ~* a.name)'}
                                                      ]
                                       })
+                app.get('/areas/:zoom/:column/:row.:format'
+                       ,shape_handler
                        )
+                app.get('/areas.:format'
+                       ,shape_handler)
+                
                 server=http
                        .createServer(app)
                        .listen(testport,done)
@@ -197,11 +200,38 @@ describe ('shape_service', function(){
             server.close(done)
         })
 
-        it('should get lines for freeways in a box'
+        it('should get polygons for counties in a box'
           ,function(done){
                // load the service for vds shape data
                request({//url:'http://'+ testhost +':'+testport+'/areas/11/354/820.json'
                    url:'http://'+ testhost +':'+testport+'/areas/11/353/820.json'
+                       ,'headers':{'accept':'application/json'}
+                       ,followRedirect:true}
+                      ,function(e,r,b){
+                           if(e) return done(e)
+                           r.statusCode.should.equal(200)
+                           should.exist(b)
+                           var c = JSON.parse(b)
+                           c.should.have.property('type','FeatureCollection')
+                           c.should.have.property('features')
+                           c.features.should.have.length(1)
+                           console.log(c.features[0])
+                           var m = c.features[0]
+                           console.log('area features: '+JSON.stringify(m))
+                           _.each(c.features
+                                 ,function(member){
+                                      member.should.have.property('geometry')
+                                      member.should.have.property('properties')
+                                      member.properties.should.have.property('id')
+                                  })
+                           return done()
+                       })
+           })
+        it('should get all the counties when there is no box'
+          ,function(done){
+               // load the service for vds shape data
+               request({//url:'http://'+ testhost +':'+testport+'/areas/11/354/820.json'
+                   url:'http://'+ testhost +':'+testport+'/areas.json'
                        ,'headers':{'accept':'application/json'}
                        ,followRedirect:true}
                       ,function(e,r,b){
