@@ -1,4 +1,4 @@
-/* global require console process it describe after before */
+/* global require console process it describe after before JSON */
 
 // these tests are for a user, but not one with admin privs
 
@@ -24,6 +24,7 @@ var pport = process.env.PSQL_PORT || 5432;
 var testhost = env.SHAPES_TEST_HOST || '127.0.0.1'
 var testport = env.SHAPES_TEST_PORT || 3000
 
+var geom_utils = require('../lib/geom_utils')
 
 describe ('shape_service', function(){
 
@@ -235,14 +236,19 @@ describe ('shape_service', function(){
                            c.should.have.property('type','FeatureCollection')
                            c.should.have.property('features')
                            // use greater than, because of islands and such
-                           console.log('length of counties is :'+c.features.length)
-                           // c.features.should.have.length(58)
+                           c.features.should.have.length(95)
+                           var fipscheck  = geom_utils.fips_lookup()
                            _.each(c.features
                                  ,function(member){
                                       member.should.have.property('geometry')
                                       member.should.have.property('properties')
                                       member.properties.should.have.property('id')
-                                  })
+                                      member.properties.should.have.property('fips')
+                                      if(fipscheck[member.properties.fips]){
+                                          delete fipscheck[member.properties.fips];
+                                      }
+                                  });
+                           _.keys(fipscheck).should.be.empty
                            return done()
                        })
            })
