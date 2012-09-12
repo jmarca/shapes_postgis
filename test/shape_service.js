@@ -5,13 +5,11 @@
 var should = require('should')
 
 var request = require('request');
-var async = require('async')
 var _ = require('lodash');
 var sgg = require('../lib/shape_geojson_generation')
 var shape_service = sgg.shape_service;
 var http = require('http')
 var express = require('express')
-var RedisStore = require('connect-redis')(express);
 
 
 var env = process.env;
@@ -34,8 +32,6 @@ describe ('shape_service', function(){
         before(
             function(done){
                 app = express()
-                      .use(express.cookieParser('barley Waterloo Napoleon Mareschal Foch bravest'))
-                      .use(express.session({ store: new RedisStore }))
 
                 app.get('/points/:zoom/:column/:row.:format'
                        ,shape_service({'db':'osm'
@@ -92,8 +88,6 @@ describe ('shape_service', function(){
         before(
             function(done){
                 app = express()
-                      .use(express.cookieParser('barley Waterloo Napoleon Mareschal Foch bravest'))
-                      .use(express.session({ store: new RedisStore }))
 
                 app.get('/lines/:zoom/:column/:row.:format'
                        ,shape_service({'db':'spatialvds'
@@ -152,8 +146,7 @@ describe ('shape_service', function(){
         before(
             function(done){
                 app = express()
-                      .use(express.cookieParser('barley Waterloo Napoleon Mareschal Foch bravest'))
-                      .use(express.session({ store: new RedisStore }))
+
                 var shape_handler = shape_service({'db':'spatialvds'
                                       ,'table':'public.carb_counties_aligned_03'
                                       ,'alias':'counties'
