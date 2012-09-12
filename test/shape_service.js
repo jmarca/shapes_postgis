@@ -6,7 +6,7 @@ var should = require('should')
 
 var request = require('request');
 var async = require('async')
-var _ = require('underscore');
+var _ = require('lodash');
 var sgg = require('../lib/shape_geojson_generation')
 var shape_service = sgg.shape_service;
 var http = require('http')
@@ -24,7 +24,7 @@ var pport = process.env.PSQL_PORT || 5432;
 var testhost = env.SHAPES_TEST_HOST || '127.0.0.1'
 var testport = env.SHAPES_TEST_PORT || 3000
 
-var geom_utils = require('../lib/geom_utils')
+var geom_utils = require('geom_utils')
 
 describe ('shape_service', function(){
 

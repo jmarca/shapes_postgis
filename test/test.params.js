@@ -5,8 +5,7 @@
 var should = require('should')
 
 var request = require('request');
-var async = require('async')
-var _ = require('underscore');
+
 var sgg = require('../lib/shape_geojson_generation')
 
 describe('shape service options'
