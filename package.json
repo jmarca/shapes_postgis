@@ -15,7 +15,8 @@
   },
   "devDependencies": {
     "express": "~3.0.0rc4",
-    "mocha": "1.3.x",
+      "mocha": "1.3.x",
+      "async":"",
     "should": "*"
   },
   "scripts": {
