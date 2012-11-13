@@ -40,6 +40,7 @@ describe ('shape_service', function(){
                                       ,'host':phost
                                       ,'username':puser
                                       ,'password':ppass
+                                      ,'port':pport
                                       ,'select_properties':{'tvd.freeway_id' : 'freeway'
                                                            ,'tvd.freeway_dir': 'direction'
                                                            ,"'vdsid_' || id"   : 'detector_id'
@@ -96,6 +97,7 @@ describe ('shape_service', function(){
                                       ,'host':phost
                                       ,'username':puser
                                       ,'password':ppass
+                                      ,'port':pport
                                       ,'select_properties':{'murb.refnum' : 'freeway'
                                                            ,'murb.direction': 'direction'
                                                            ,"detector_id"   : 'detector_id'
@@ -153,6 +155,7 @@ describe ('shape_service', function(){
                                       ,'host':phost
                                       ,'username':puser
                                       ,'password':ppass
+                                      ,'port':pport
                                       ,'select_properties':{'gid'           : 'gid'
                                                            ,'a.fips'         :'fips'
                                                            ,'cacoa_'       : 'cacoa_'
@@ -259,6 +262,7 @@ describe ('shape_service', function(){
                                 ,'host':phost
                                 ,'username':puser
                                 ,'password':ppass
+                                ,'port':pport
                                 ,'select_properties':{'tvd.freeway_id' : 'freeway'
                                                      ,'tvd.freeway_dir': 'direction'
                                                      ,"'vdsid_' || id"   : 'detector_id'
@@ -272,6 +276,7 @@ describe ('shape_service', function(){
                                 ,'host':phost
                                 ,'username':puser
                                 ,'password':ppass
+                                ,'port':pport
                                 ,'select_properties':{'twim.freeway_id' : 'freeway'
                                                      ,'twim.direction': 'direction'
                                                      ,"'wimid_' || site_no"   : 'detector_id'
