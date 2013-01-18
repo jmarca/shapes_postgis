@@ -8,16 +8,16 @@
     "test": "test"
   },
   "dependencies": {
-    "request": "~2.11.1",
-    "pg": "~0.8.3",
-    "lodash": "*",
+    "request": "",
+    "pg": "",
+    "lodash": "",
     "geom_utils": "git://github.com/jmarca/geom_utils.git"
   },
   "devDependencies": {
     "express": "~3.0.0rc4",
-    "mocha": "1.3.x",
+    "mocha": "",
     "async": "",
-    "should": "*"
+    "should": ""
   },
   "scripts": {
     "test": "mocha"
