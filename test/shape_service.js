@@ -571,4 +571,87 @@ describe ('shape_service', function(){
                        })
            })
     })
+    describe('with clause in query', function(){
+        var app,server;
+
+        var _testport = testport
+        testport++
+        before(
+            function(done){
+                app = express()
+
+                var vds_options={'db':'osm'
+                                ,'table':'newtbmap.tvd'
+                                ,'alias':'tvd'
+                                ,'host':phost
+                                ,'username':puser
+                                ,'password':ppass
+                                ,'port':pport
+                                ,'select_properties':{'tvd.freeway_id' : 'freeway'
+                                                     ,'tvd.freeway_dir': 'direction'
+                                                     ,"'vdsid_' || id"   : 'detector_id'
+                                                     ,'vdstype'        : 'type'
+                                                     }
+                                ,'id_col':'detector_id'
+                                }
+
+                var vdsservice = shape_service(vds_options)
+
+                app.get('/points/:zoom/:column/:row.:format'
+                       ,vdsservice
+                       )
+                server=http
+                       .createServer(app)
+                       .listen(_testport,done)
+
+            })
+        after(function(done){
+            server.close(done)
+        })
+
+
+        it('should accept with_clause in the request object'
+          ,function(done){
+               // load the service for vds shape data
+
+               // set up a complicated with clause for the bbox stuff
+               var params =
+                   { with_clause: ['bounding_area as (select'
+                                  ,options.geom
+                                  ,'as geom'
+                                  ,'from'
+                                  ,options.table
+                                  ,options.where
+                                  ,')'].join(' ')
+                   , where_clause: perm_token.user_id
+                   }
+               ;
+               var url = 'http://'+ testhost +':'+_testport+'/points/10/174/407.json?'
+               url += qs.stringify(params)
+
+               request({url:?with_clause=area_bbox = vdstype~*\'ff\''
+                       ,'headers':{'accept':'application/json'}
+                       ,qs: {}
+                       ,followRedirect:true}
+                      ,function(e,r,b){
+                           if(e) return done(e)
+                           r.statusCode.should.equal(200)
+                           should.exist(b)
+                           var c = JSON.parse(b)
+                           c.should.have.property('type','FeatureCollection')
+                           c.should.have.property('features')
+                           c.features.should.have.length(6)
+                           var ff_regex = /ff/i;
+                           _.each(c.features
+                                 ,function(member){
+                                      member.should.have.property('geometry')
+                                      member.should.have.property('properties')
+                                      member.properties.should.have.property('id')
+                                      var is_ff = ff_regex.test(member.properties.type)
+                                      is_ff.should.be.true
+                                  });
+                           return done()
+                       })
+           })
+    })
 })
