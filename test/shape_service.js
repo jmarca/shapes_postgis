@@ -385,7 +385,7 @@ describe ('shape_service', function(){
                 app = express()
 
                 app.use(express.bodyParser())
-                app.use(express.logger())
+                //app.use(express.logger())
                 var vds_options={'db':'osm'
                                 ,'table':'newtbmap.tvd'
                                 ,'alias':'tvd'
@@ -476,7 +476,7 @@ describe ('shape_service', function(){
                            var c = JSON.parse(b)
                            c.should.have.property('type','FeatureCollection')
                            c.should.have.property('features')
-                           c.features.should.have.length(114)
+                           c.features.should.have.length(112)
                            var vds_match=false
                            var wim_match = false;
                            var vds_regex = /vdsid_\d{6,7}/;
@@ -565,6 +565,97 @@ describe ('shape_service', function(){
                                       member.should.have.property('properties')
                                       member.properties.should.have.property('id')
                                       var is_ff = ff_regex.test(member.properties.type)
+                                      is_ff.should.be.true
+                                  });
+                           return done()
+                       })
+           })
+    })
+    describe('custom row handler', function(){
+        var app,server;
+        var collector
+        var _testport = testport
+        testport++
+        before(
+            function(done){
+                app = express()
+                collector=[]
+                var vds_options={'db':'osm'
+                                ,'table':'newtbmap.tvd'
+                                ,'alias':'tvd'
+                                ,'host':phost
+                                ,'username':puser
+                                ,'password':ppass
+                                ,'port':pport
+                                ,'select_properties':{'tvd.freeway_id' : 'freeway'
+                                                     ,'tvd.freeway_dir': 'direction'
+                                                     ,"'vdsid_' || id"   : 'detector_id'
+                                                     ,'vdstype'        : 'type'
+                                                     }
+                                ,'id_col':['detector_id']
+
+                                }
+                var vdsservice = shape_service(vds_options)
+                app.get('/points/:zoom/:column/:row.:format'
+                       ,function(req,res,next){
+                            var callback = function(){
+                                res.writeHead(200, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify(collector));
+                            }
+                            req.params['row_handler']= function(row){
+                                var val = {}
+                                _.each(vds_options.select_properties
+                                      ,function(v,k){
+                                           val[v] = row[v]
+                                       });
+                                if(vds_options.id_col !== undefined){
+                                    var id = _.map(vds_options.id_col
+                                                  ,function(k){
+                                                       return row[k]
+                                                   })
+                                    if(_.isArray(id))
+                                        id = id.join('_')
+                                    val.id = id
+                                }
+                                collector.push(val)
+                            }
+
+                            return vdsservice(req,res,next,callback)
+                        }
+                       )
+                server=http
+                       .createServer(app)
+                       .listen(_testport,done)
+
+            })
+        after(function(done){
+            server.close(done)
+        })
+
+
+        it('should be okay with custom row handler'
+          ,function(done){
+               // load the service for vds shape data
+               request({url:'http://'+ testhost +':'+_testport+'/points/10/174/407.json?where_clause=vdstype~*\'ff\''
+                       ,'headers':{'accept':'application/json'}
+                       ,qs: {}
+                       ,followRedirect:true}
+                      ,function(e,r,b){
+                           if(e) return done(e)
+                           r.statusCode.should.equal(200)
+                           should.exist(b)
+                           var c = JSON.parse(b)
+                           c.should.not.have.property('type')
+                           c.should.not.have.property('features')
+                           c.should.have.length(6)
+                           var ff_regex = /ff/i;
+                           _.each(c
+                                 ,function(member){
+                                      member.should.not.have.property('geometry')
+                                      member.should.not.have.property('properties')
+                                      member.should.have.property('id')
+                                      member.should.have.property('type')
+                                      var is_ff = ff_regex.test(member.type)
                                       is_ff.should.be.true
                                   });
                            return done()
