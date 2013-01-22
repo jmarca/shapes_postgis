@@ -385,7 +385,7 @@ describe ('shape_service', function(){
                 app = express()
 
                 app.use(express.bodyParser())
-                app.use(express.logger())
+                //app.use(express.logger())
                 var vds_options={'db':'osm'
                                 ,'table':'newtbmap.tvd'
                                 ,'alias':'tvd'
@@ -573,13 +573,13 @@ describe ('shape_service', function(){
     })
     describe('custom row handler', function(){
         var app,server;
-
+        var collector
         var _testport = testport
         testport++
         before(
             function(done){
                 app = express()
-
+                collector=[]
                 var vds_options={'db':'osm'
                                 ,'table':'newtbmap.tvd'
                                 ,'alias':'tvd'
@@ -592,34 +592,36 @@ describe ('shape_service', function(){
                                                      ,"'vdsid_' || id"   : 'detector_id'
                                                      ,'vdstype'        : 'type'
                                                      }
-                                ,'id_col':'detector_id'
-                                ,'row_handler':
-                                 function(select_properties,id_col,data,req,res,next){
-                                     return function(row){
-                                         var val = {}
-                                         _.each(select_properties
-                                               ,function(v,k){
-                                                    val[v] = row[v]
-                                                });
-                                         if(id_col !== undefined){
-                                             var id = _.map(id_col
-                                                           ,function(k){
-                                                                return row[k]
-                                                            })
-                                             if(_.isArray(id))
-                                                 id = id.join('_')
-                                             val.id = id
-                                         }
-                                         data.features.push(val);
-                                     }
-                                 }
+                                ,'id_col':['detector_id']
 
                                 }
-
                 var vdsservice = shape_service(vds_options)
-
                 app.get('/points/:zoom/:column/:row.:format'
-                       ,vdsservice
+                       ,function(req,res,next){
+                            var callback = function(){
+                                res.writeHead(200, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify(collector));
+                            }
+                            req.params['row_handler']= function(row){
+                                var val = {}
+                                _.each(vds_options.select_properties
+                                      ,function(v,k){
+                                           val[v] = row[v]
+                                       });
+                                if(vds_options.id_col !== undefined){
+                                    var id = _.map(vds_options.id_col
+                                                  ,function(k){
+                                                       return row[k]
+                                                   })
+                                    if(_.isArray(id))
+                                        id = id.join('_')
+                                    val.id = id
+                                }
+                                collector.push(val)
+                            }
+
+                            return vdsservice(req,res,next,callback)
+                        }
                        )
                 server=http
                        .createServer(app)
@@ -643,11 +645,11 @@ describe ('shape_service', function(){
                            r.statusCode.should.equal(200)
                            should.exist(b)
                            var c = JSON.parse(b)
-                           c.should.have.property('type','FeatureCollection')
-                           c.should.have.property('features')
-                           c.features.should.have.length(6)
+                           c.should.not.have.property('type')
+                           c.should.not.have.property('features')
+                           c.should.have.length(6)
                            var ff_regex = /ff/i;
-                           _.each(c.features
+                           _.each(c
                                  ,function(member){
                                       member.should.not.have.property('geometry')
                                       member.should.not.have.property('properties')
