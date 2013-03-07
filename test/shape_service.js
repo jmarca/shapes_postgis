@@ -526,6 +526,9 @@ describe ('shape_service', function(){
                                                      ,'vdstype'        : 'type'
                                                      }
                                 ,'id_col':'detector_id'
+                                ,'dynamic_where_clause':{'vdstype':{'lhs':'vdstype',
+                                                                    'comp':'~*'
+                                                                   }}
                                 }
 
                 var vdsservice = shape_service(vds_options)
@@ -546,7 +549,7 @@ describe ('shape_service', function(){
         it('should accept where_clause in the request object as well'
           ,function(done){
                // load the service for vds shape data
-               request({url:'http://'+ testhost +':'+_testport+'/points/10/174/407.json?where_clause=vdstype~*\'ff\''
+               request({url:'http://'+ testhost +':'+_testport+'/points/10/174/407.json?vdstype=\'ff\''
                        ,'headers':{'accept':'application/json'}
                        ,qs: {}
                        ,followRedirect:true}
@@ -593,6 +596,9 @@ describe ('shape_service', function(){
                                                      ,'vdstype'        : 'type'
                                                      }
                                 ,'id_col':['detector_id']
+                                ,'dynamic_where_clause':{'vdstype':{'lhs':'vdstype',
+                                                                    'comp':'~*'
+                                                                   }}
 
                                 }
                 var vdsservice = shape_service(vds_options)
@@ -636,7 +642,7 @@ describe ('shape_service', function(){
         it('should be okay with custom row handler'
           ,function(done){
                // load the service for vds shape data
-               request({url:'http://'+ testhost +':'+_testport+'/points/10/174/407.json?where_clause=vdstype~*\'ff\''
+               request({url:'http://'+ testhost +':'+_testport+'/points/10/174/407.json?vdstype=\'ff\''
                        ,'headers':{'accept':'application/json'}
                        ,qs: {}
                        ,followRedirect:true}
