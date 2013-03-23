@@ -50,7 +50,12 @@ var vds_options={'db':'osm'
 var vdsservice = shape_service(vds_options)
 
 app.get('/points/:year/:vdstype/:zoom/:column/:row.:format'
-       ,vdsservice
+       ,function(req,res,next){
+          // for some reason, express no longer allows me to 
+          // simply write 
+          // vdsservice
+          // as the handler, but requires explicit call
+          vdsservice(req,res,next)
        )
 server=http
        .createServer(app)
