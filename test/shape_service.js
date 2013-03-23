@@ -34,9 +34,7 @@ describe ('shape_service', function(){
         before(
             function(done){
                 app = express()
-
-                app.get('/points/:zoom/:column/:row.:format'
-                       ,shape_service({'db':'osm'
+               var ss = shape_service({'db':'osm'
                                       ,'table':'newtbmap.tvd'
                                       ,'alias':'tvd'
                                       ,'host':phost
@@ -50,10 +48,15 @@ describe ('shape_service', function(){
                                                            }
                                       ,'id_col':'detector_id'
                                       })
-                       )
+                app.get('/points/:zoom/:column/:row.:format'
+                       ,function(req,res,next){
+                            ss(req,res,next)
+                        })
                 server=http
                        .createServer(app)
-                       .listen(_testport,done)
+                       .listen(_testport,testhost,function(){
+                           done()
+                       })
 
             })
         after(function(done){
@@ -62,9 +65,10 @@ describe ('shape_service', function(){
 
         it('should produce vds points in a box'
           ,function(done){
+               var url = 'http://'+ testhost +':'+_testport+'/points/15/5653/13125.json'
                // load the service for vds shape data
                request({//url:'http://'+ testhost +':'+_testport+'/points/11/354/820.json'
-                   url:'http://'+ testhost +':'+_testport+'/points/15/5653/13125.json'
+                   url: url
                        ,'headers':{'accept':'application/json'}
                        ,followRedirect:true}
                       ,function(e,r,b){
@@ -92,9 +96,7 @@ describe ('shape_service', function(){
         before(
             function(done){
                 app = express()
-
-                app.get('/lines/:zoom/:column/:row.:format'
-                       ,shape_service({'db':'spatialvds'
+                var ss=shape_service({'db':'spatialvds'
                                       ,'table':'tempseg.mostusedroadbits'
                                       ,'alias':'murb'
                                       ,'host':phost
@@ -110,6 +112,8 @@ describe ('shape_service', function(){
                                       ,'id_col':['detector_id','direction','year']
                                       ,'geo_col':'seggeom'
                                       })
+                app.get('/lines/:zoom/:column/:row.:format'
+                       ,function(req,res,next){ss(req,res,next)}
                        )
 
                 server=http
@@ -185,10 +189,11 @@ describe ('shape_service', function(){
                                                      ]
                                       })
                 app.get('/areas/:zoom/:column/:row.:format'
-                       ,shape_handler
+                       ,function(req,res,next){shape_handler(req,res,next)}
                        )
                 app.get('/areas.:format'
-                       ,shape_handler)
+                       ,function(req,res,next){shape_handler(req,res,next)}
+                       )
 
                 server=http
                        .createServer(app)
@@ -534,7 +539,7 @@ describe ('shape_service', function(){
                 var vdsservice = shape_service(vds_options)
 
                 app.get('/points/:zoom/:column/:row.:format'
-                       ,vdsservice
+                       ,function(req,res,next){vdsservice(req,res,next)}
                        )
                 server=http
                        .createServer(app)
