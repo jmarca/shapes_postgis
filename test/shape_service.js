@@ -673,4 +673,157 @@ describe ('shape_service', function(){
                        })
            })
     })
+    describe('points in an externally defined area', function(){
+        var app,server;
+        var _testport = testport
+        testport++
+        before(
+            function(done){
+                app = express()
+                var vds_options={'db':'osm'
+                                ,'table':'newtbmap.tvd'
+                                ,'alias':'tvd'
+                                ,'host':phost
+                                ,'username':puser
+                                ,'password':ppass
+                                ,'port':pport
+                                ,'select_properties':{'tvd.freeway_id' : 'freeway'
+                                                     ,'tvd.freeway_dir': 'direction'
+                                                     ,"'vdsid_' || id"   : 'detector_id'
+                                                     ,'vdstype'        : 'type'
+                                                     }
+                                ,'id_col':['detector_id']
+                                ,'dynamic_where_clause':{'vdstype':{'lhs':'vdstype',
+                                                                    'comp':'~*'
+                                                                   }}
+                                ,'area_type_param':'areatype'
+                                ,'area_param':'area'
+
+                                }
+                var vdsservice = shape_service(vds_options)
+                app.get('/points/:areatype/:area.:format'
+                       ,function(req,res,next){
+                            var collector=[]
+
+                            var callback = function(){
+                                res.json(collector)
+                            }
+                            req.params['row_handler']= function(row){
+                                var val = {}
+                                _.each(vds_options.select_properties
+                                      ,function(v,k){
+                                           val[v] = row[v]
+                                       });
+                                if(vds_options.id_col !== undefined){
+                                    var id = _.map(vds_options.id_col
+                                                  ,function(k){
+                                                       return row[k]
+                                                   })
+                                    if(_.isArray(id))
+                                        id = id.join('_')
+                                    val.id = id
+                                }
+                                collector.push(val)
+                            }
+
+                            return vdsservice(req,res,next,callback)
+                        }
+                       )
+                server=http
+                       .createServer(app)
+                       .listen(_testport,done)
+
+            })
+        after(function(done){
+            server.close(done)
+        })
+
+
+        it('should get county points'
+          ,function(done){
+               // load the service for vds shape data
+               request({url:'http://'+ testhost +':'+_testport+'/points/counties/06019.json?vdstype=\'fr\''
+                       ,'headers':{'accept':'application/json'}
+                       ,qs: {}
+                       ,followRedirect:true}
+                      ,function(e,r,b){
+                           if(e) return done(e)
+                           r.statusCode.should.equal(200)
+                           should.exist(b)
+                           var c = JSON.parse(b)
+                           c.should.not.have.property('type')
+                           c.should.not.have.property('features')
+                           c.should.have.length(20)
+                           var _regex = /fr/i;
+                           _.each(c
+                                 ,function(member){
+                                      member.should.not.have.property('geometry')
+                                      member.should.not.have.property('properties')
+                                      member.should.have.property('id')
+                                      member.should.have.property('type')
+                                      var is_ff = _regex.test(member.type)
+                                      is_ff.should.be.true
+                                  });
+                           return done()
+                       })
+           })
+        it('should get airbasin points'
+          ,function(done){
+               // load the service for vds shape data
+               request({url:'http://'+ testhost +':'+_testport+'/points/airbasins/SJV.json?vdstype=\'ml\''
+                       ,'headers':{'accept':'application/json'}
+                       ,qs: {}
+                       ,followRedirect:true}
+                      ,function(e,r,b){
+                           if(e) return done(e)
+                           r.statusCode.should.equal(200)
+                           should.exist(b)
+                           var c = JSON.parse(b)
+                           c.should.not.have.property('type')
+                           c.should.not.have.property('features')
+                           //c.should.have.length(524)
+                           console.log(c.length)
+                           var ml_regex = /ml/i;
+                           _.each(c
+                                 ,function(member){
+                                      member.should.not.have.property('geometry')
+                                      member.should.not.have.property('properties')
+                                      member.should.have.property('id')
+                                      member.should.have.property('type')
+                                      member.type.should.match(ml_regex)
+                                      //var is_ml = ml_regex.test(member.type)
+                                      //is_ml.should.be.true
+                                  });
+                           return done()
+                       })
+           })
+        it('should get airdistrict points'
+          ,function(done){
+               // load the service for vds shape data
+               request({url:'http://'+ testhost +':'+_testport+'/points/airdistricts/SC.json?vdstype=\'ff\''
+                       ,'headers':{'accept':'application/json'}
+                       ,qs: {}
+                       ,followRedirect:true}
+                      ,function(e,r,b){
+                           if(e) return done(e)
+                           r.statusCode.should.equal(200)
+                           should.exist(b)
+                           var c = JSON.parse(b)
+                           c.should.not.have.property('type')
+                           c.should.not.have.property('features')
+                           c.should.have.length(319)
+                           var _regex = /ff/i;
+                           _.each(c
+                                 ,function(member){
+                                      member.should.not.have.property('geometry')
+                                      member.should.not.have.property('properties')
+                                      member.should.have.property('id')
+                                      member.should.have.property('type')
+                                      var is_ff = _regex.test(member.type)
+                                      is_ff.should.be.true
+                                  });
+                           return done()
+                       })
+           })
+    })
 })
