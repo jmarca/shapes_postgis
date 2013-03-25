@@ -675,13 +675,11 @@ describe ('shape_service', function(){
     })
     describe('points in an externally defined area', function(){
         var app,server;
-        var collector
         var _testport = testport
         testport++
         before(
             function(done){
                 app = express()
-                collector=[]
                 var vds_options={'db':'osm'
                                 ,'table':'newtbmap.tvd'
                                 ,'alias':'tvd'
@@ -705,6 +703,8 @@ describe ('shape_service', function(){
                 var vdsservice = shape_service(vds_options)
                 app.get('/points/:areatype/:area.:format'
                        ,function(req,res,next){
+                            var collector=[]
+
                             var callback = function(){
                                 res.json(collector)
                             }
@@ -742,7 +742,7 @@ describe ('shape_service', function(){
         it('should get county points'
           ,function(done){
                // load the service for vds shape data
-               request({url:'http://'+ testhost +':'+_testport+'/points/counties/06019.json?vdstype=\'ff\''
+               request({url:'http://'+ testhost +':'+_testport+'/points/counties/06019.json?vdstype=\'fr\''
                        ,'headers':{'accept':'application/json'}
                        ,qs: {}
                        ,followRedirect:true}
@@ -753,15 +753,15 @@ describe ('shape_service', function(){
                            var c = JSON.parse(b)
                            c.should.not.have.property('type')
                            c.should.not.have.property('features')
-                           c.should.have.length(2)
-                           var ff_regex = /ff/i;
+                           c.should.have.length(20)
+                           var _regex = /fr/i;
                            _.each(c
                                  ,function(member){
                                       member.should.not.have.property('geometry')
                                       member.should.not.have.property('properties')
                                       member.should.have.property('id')
                                       member.should.have.property('type')
-                                      var is_ff = ff_regex.test(member.type)
+                                      var is_ff = _regex.test(member.type)
                                       is_ff.should.be.true
                                   });
                            return done()
@@ -770,7 +770,7 @@ describe ('shape_service', function(){
         it('should get airbasin points'
           ,function(done){
                // load the service for vds shape data
-               request({url:'http://'+ testhost +':'+_testport+'/points/airbasins/SJV.json?vdstype=\'ff\''
+               request({url:'http://'+ testhost +':'+_testport+'/points/airbasins/SJV.json?vdstype=\'ml\''
                        ,'headers':{'accept':'application/json'}
                        ,qs: {}
                        ,followRedirect:true}
@@ -781,16 +781,18 @@ describe ('shape_service', function(){
                            var c = JSON.parse(b)
                            c.should.not.have.property('type')
                            c.should.not.have.property('features')
-                           c.should.have.length(4)
-                           var ff_regex = /ff/i;
+                           //c.should.have.length(524)
+                           console.log(c.length)
+                           var ml_regex = /ml/i;
                            _.each(c
                                  ,function(member){
                                       member.should.not.have.property('geometry')
                                       member.should.not.have.property('properties')
                                       member.should.have.property('id')
                                       member.should.have.property('type')
-                                      var is_ff = ff_regex.test(member.type)
-                                      is_ff.should.be.true
+                                      member.type.should.match(ml_regex)
+                                      //var is_ml = ml_regex.test(member.type)
+                                      //is_ml.should.be.true
                                   });
                            return done()
                        })
@@ -798,7 +800,7 @@ describe ('shape_service', function(){
         it('should get airdistrict points'
           ,function(done){
                // load the service for vds shape data
-               request({url:'http://'+ testhost +':'+_testport+'/points/airdistricts/SAN_JOAQUIN_VALLEY.json?vdstype=\'ff\''
+               request({url:'http://'+ testhost +':'+_testport+'/points/airdistricts/SC.json?vdstype=\'ff\''
                        ,'headers':{'accept':'application/json'}
                        ,qs: {}
                        ,followRedirect:true}
@@ -809,15 +811,15 @@ describe ('shape_service', function(){
                            var c = JSON.parse(b)
                            c.should.not.have.property('type')
                            c.should.not.have.property('features')
-                           c.should.have.length(4)
-                           var ff_regex = /ff/i;
+                           c.should.have.length(319)
+                           var _regex = /ff/i;
                            _.each(c
                                  ,function(member){
                                       member.should.not.have.property('geometry')
                                       member.should.not.have.property('properties')
                                       member.should.have.property('id')
                                       member.should.have.property('type')
-                                      var is_ff = ff_regex.test(member.type)
+                                      var is_ff = _regex.test(member.type)
                                       is_ff.should.be.true
                                   });
                            return done()
