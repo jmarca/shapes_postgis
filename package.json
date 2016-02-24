@@ -1,6 +1,6 @@
 {
   "name": "shapes_postgis",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "extract shapes as geojson from postgis database in node.js",
   "main": "index.js",
   "directories": {
@@ -11,10 +11,10 @@
     "request": "",
     "pg": "",
     "lodash": "",
-    "geom_utils": "git://github.com/jmarca/geom_utils.git"
+    "geom_utils": "jmarca/geom_utils.git"
   },
   "devDependencies": {
-    "express": "~3.0.0rc4",
+    "express": "",
     "mocha": "",
     "async": "",
     "should": ""
