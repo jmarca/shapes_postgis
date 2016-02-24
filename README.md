@@ -51,8 +51,8 @@ var vdsservice = shape_service(vds_options)
 
 app.get('/points/:year/:vdstype/:zoom/:column/:row.:format'
        ,function(req,res,next){
-          // for some reason, express no longer allows me to 
-          // simply write 
+          // for some reason, express no longer allows me to
+          // simply write
           // vdsservice
           // as the handler, but requires explicit call
           vdsservice(req,res,next)
@@ -68,3 +68,29 @@ vdstype into the query in order to limit the results.
 
 You can further improve security by using Express features to require
 that the parameters fit a certain type, as described [in the Express docs](http://expressjs.com/api.html#app.param).
+
+
+# Tests
+
+As of February 2016, the tests are now using my config_okay module.
+So that means you need to set up a file called `test.config.json` in
+the root directory, make sure it is chmod 0600, and have it contain
+your database details.  For example, on my local laptop, I have
+
+```
+{
+    "postgresql":{
+        "host":"127.0.0.1",
+        "port":5432,
+        "auth":{
+            "username":"mydbusername"
+        },
+        "db":"osm2"
+    }
+}
+```
+
+Change the details to match your situation.  However, note that most
+of the tests will fail unless your db matches exactly mine.  In that
+case, the fails will be slightly different numbers of rows, for
+example, 11 rows of off-ramp detectors rather than the desired 9.
