@@ -1,5 +1,7 @@
 # Shapes PostGIS
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/jmarca/shapes_postgis.svg)](https://greenkeeper.io/)
+
 This library is an attempt to combine the many different services I've
 written over the past two years or so that customize access to a
 particular PostGIS table.
